@@ -9,25 +9,23 @@ Original file is located at
 
 import os
 from dotenv import load_dotenv
-import os
+from github import Github
 
+# Load environment variables from the .env file
 load_dotenv()
 
-hf_token = os.getenv("HF_TOKEN")
+# Get the GitHub token from the environment
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
+# Create a GitHub client instance
+g = Github(GITHUB_TOKEN)
 
-
-
-from github import Github
-import re
-from datasets import Dataset
-
-# initialize PyGithub with the GitHub token
-
-
-# specify the repository
+# Access the repository (public or private depending on token permissions)
 repo = g.get_repo("openai/gym")
-github_token = os.getenv("GITHUB_TOKEN")
+
+# Example: print the repository name
+print(f"Repository: {repo.name}")
+
 # function to extract Python functions from a script
 def extract_functions_from_code(code):
     pattern = re.compile(r"def\s+(\w+)\s*\(.*\):")
