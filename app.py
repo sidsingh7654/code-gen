@@ -10,6 +10,8 @@ Original file is located at
 import os
 from dotenv import load_dotenv
 from github import Github
+import re
+from datasets import Dataset
 
 # Load environment variables from the .env file
 load_dotenv()
@@ -26,16 +28,29 @@ repo = g.get_repo("openai/gym")
 # Example: print the repository name
 print(f"Repository: {repo.name}")
 
-import re
-from datasets import Dataset
 
-# function to extract Python functions from a script
+
+# Initialize GitHub API (Ensure you have authentication)
+g = Github("your_github_access_token")
+
+# Specify the repository
+repo = g.get_repo("openai/gym")
+
+# Function to extract Python functions from a script
 def extract_functions_from_code(code):
-    pattern = re.compile(r"^\s*def\s+(\w+)\s*\(.*?\):", re.MULTILINE)
+    if not isinstance(code, str):  # Ensure input is a string
+        print("Error: Code is not a string")
+        return []
+    
+    pattern = re.compile(r"def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(.*\):")  # Valid function name regex
     functions = pattern.findall(code)
+
+    if not functions:
+        print("Warning: No functions found in the code.")
+
     return functions
 
-# fetch Python files from the repository
+# Fetch Python files from the repository
 python_files = []
 contents = repo.get_contents("")
 while contents:
@@ -45,22 +60,27 @@ while contents:
     elif file_content.path.endswith(".py"):
         python_files.append(file_content)
 
-# extract functions and create dataset
+# Extract functions and create dataset
 data = {"code": [], "function_name": []}
 for file in python_files:
     code = file.decoded_content.decode("utf-8")
+
+    # Debugging print statement
+    print(f"\nProcessing file: {file.path}\nFirst 200 characters:\n{code[:200]}\n")
+
     functions = extract_functions_from_code(code)
     for function in functions:
         data["code"].append(code)
         data["function_name"].append(function)
 
-# create a Hugging Face dataset
+# Create a Hugging Face dataset
 dataset = Dataset.from_dict(data)
 
-# save the dataset to disk
+# Save the dataset to disk
 dataset.save_to_disk("code_generation_dataset")
 
 print("Dataset created and saved to disk.")
+
 
 
 from datasets import load_from_disk
