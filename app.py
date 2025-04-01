@@ -26,9 +26,12 @@ repo = g.get_repo("openai/gym")
 # Example: print the repository name
 print(f"Repository: {repo.name}")
 
+import re
+from datasets import Dataset
+
 # function to extract Python functions from a script
 def extract_functions_from_code(code):
-    pattern = re.compile(r"def\s+(\w+)\s*\(.*\):")
+    pattern = re.compile(r"^\s*def\s+(\w+)\s*\(.*?\):", re.MULTILINE)
     functions = pattern.findall(code)
     return functions
 
@@ -58,6 +61,7 @@ dataset = Dataset.from_dict(data)
 dataset.save_to_disk("code_generation_dataset")
 
 print("Dataset created and saved to disk.")
+
 
 from datasets import load_from_disk
 from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingArguments
