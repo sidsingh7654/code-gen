@@ -16,9 +16,6 @@ load_dotenv()
 hf_token = os.getenv("HF_TOKEN")
 
 
-git add app.py
-git commit -m "Remove sensitive tokens from app.py"
-
 
 
 from github import Github
